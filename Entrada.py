@@ -80,7 +80,7 @@ class Entrada:
             #dtMesAnterior ="01/09/2024" 
             #dt_Atual ="31/10/2024"
           
-            ############################### Gerando Relatório de entrada C5 #################################################
+            ############################### Gerando Relatório de entrada C5 ###################################################################################
             appEntrada = Application().connect(title_re=".*Fiscal.*")
             guptamdiframeEntrada = appEntrada[u'Gupta:MDIFrame']
             guptamdiframeEntrada.wait('ready')
