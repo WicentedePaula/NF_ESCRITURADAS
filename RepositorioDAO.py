@@ -222,7 +222,8 @@ class DAO:
 
                 else:
                         print("Falha ao conectar ao banco de dados. CONEXAO É NULL.")
-
+                
+                resultados = list(resultados)
                 return resultados
              
              

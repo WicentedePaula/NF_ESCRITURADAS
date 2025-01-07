@@ -25,8 +25,8 @@ class Entrada:
         path_modulo_consico = "\\\\10.102.227.2\\consinco2\\importacao\\sped \n"
       
         ano_atual =  datetime.now().strftime("%Y")
-        mes_ano = (datetime.now() - relativedelta(months=1)).strftime("%m-%Y")
-        #mes_ano ="11-2024" 
+        #mes_ano = (datetime.now() - relativedelta(months=1)).strftime("%m-%Y")
+        mes_ano ="11-2024" 
       
         #Abrindo Janela de emissão de relatório de Entrada C5
         pyautogui.press("ctrl")
@@ -42,9 +42,9 @@ class Entrada:
         varFuncao.aguardar_janela_por_imagem(varJanelaFiscal,"varJanelaEntrada")
 
 
-        #varQueryLojas ="select nroempresa, empresa from CONSINCO.dim_empresa where nroempresa not in (99, 800, 986, 987, 989, 999, 10, 13, 20, 25, 29) order by NROEMPRESA"
+        varQueryLojas ="select nroempresa, empresa from CONSINCO.dim_empresa where nroempresa not in (99, 800, 986, 987, 989, 999, 10, 13, 20, 25, 29) and nroempresa = 2 order by NROEMPRESA"
         #varQueryLojas ="select nroempresa, empresa from CONSINCO.dim_empresa where nroempresa in (1,2,3,5,24,30) order by NROEMPRESA"
-        varQueryLojas ="select nroempresa, empresa from CONSINCO.dim_empresa where nroempresa in (8,14,17,18,27) order by NROEMPRESA"
+        #varQueryLojas ="select nroempresa, empresa from CONSINCO.dim_empresa where nroempresa in (8,14,17,18,27) order by NROEMPRESA"
         varQueryLojas = varExecuteDAO.executaQuery(varQueryLojas)
         for row in varQueryLojas:
             nrlj=row[0]
@@ -75,10 +75,10 @@ class Entrada:
             dlgEmpresas['Edit0'].type_keys(numeroLoja)
             dlgEmpresas['Button0'].click_input() # Clicando em ok para na janelas empresas.
 
-            dtMesAnterior = varExecuteDAO.executaQuery("SELECT TO_CHAR(TRUNC(SYSDATE, 'MM') - INTERVAL '1' MONTH, 'DD/MM/YYYY') AS primeiro_dia_mes_anterior FROM dual") 
-            dt_Atual= varExecuteDAO.executaQuery("SELECT TO_CHAR(SYSDATE, 'DD/MM/YYYY') AS data_dia_Atual FROM dual") 
-            #dtMesAnterior ="01/09/2024" 
-            #dt_Atual ="31/10/2024"
+            #dtMesAnterior = varExecuteDAO.executaQuery("SELECT TO_CHAR(TRUNC(SYSDATE, 'MM') - INTERVAL '1' MONTH, 'DD/MM/YYYY') AS primeiro_dia_mes_anterior FROM dual") 
+            #dt_Atual= varExecuteDAO.executaQuery("SELECT TO_CHAR(SYSDATE, 'DD/MM/YYYY') AS data_dia_Atual FROM dual") 
+            dtMesAnterior ="01/11/2024" 
+            dt_Atual ="27/12/2024"
           
             ############################### Gerando Relatório de entrada C5 ###################################################################################
             appEntrada = Application().connect(title_re=".*Fiscal.*")
@@ -147,21 +147,38 @@ class Entrada:
 
             ######################### Cruzando relatórios de entrada com relatórios NDD ############################################
             resultado = varFuncao.confronto_NDD(varArquivoNDD, varArquivoEntrada)
-
-            ######################### Cruzamento relatórios de retorno de cruzamento com o de Notas Pendentes no ato da Entrada ####
-            pendenciaAtoEntrega = varExecuteDAO.NF_pendentes_Ato_da_Entrega(numeroLoja, dtMesAnterior, dt_Atual)
-
-            for vlr in resultado:
-             print(vlr)
-
-           
+            
             resultado_formatado = [linha.split(";") for linha in resultado]
-
-            # Criar um DataFrame a partir da lista
             df = pd.DataFrame(resultado_formatado, columns=["FORNECEDOR", "NUMERO", "CNPJ", "CHAVE", "EMISSÃO", "VALOR CONECT", "CFOP", "STATUS"])
 
             # Definir o caminho do arquivo xlsx
-            caminho_arquivo = f"\\\\10.11.10.3\\arcomixfs$\\Dados_Contabilidade\\FISCAL\\CONFRONTO_SPED\\LOJA{numeroLoja}\\{mes_ano}\\resultado_confronto{numeroLoja}.xlsx"
+            caminho_arquivo = f"\\\\10.11.10.3\\arcomixfs$\\Dados_Contabilidade\\FISCAL\\CONFRONTO_SPED\\LOJA{numeroLoja}\\{mes_ano}\\resultado___Teste{numeroLoja}.xlsx"
+
+            # Salvar o DataFrame em um arquivo Excel
+            df.to_excel(caminho_arquivo, index=False, engine='openpyxl')
+
+            print(f"Arquivo salvo com sucesso em {caminho_arquivo}")
+
+
+
+            ######################### Cruzamento relatórios de retorno de cruzamento com o de Notas Pendentes no ato da Entrada ####
+            pendenciaAtoEntrega = varExecuteDAO.NF_pendentes_Ato_da_Entrega(numeroLoja, dtMesAnterior, dt_Atual)
+           
+
+            retornoGeral = varFuncao.verificar_e_incluir(resultado, pendenciaAtoEntrega)
+
+           # for vlr in resultado:
+           #  print(vlr)
+
+            
+            #resultado_formatado = [linha.split(";") for linha in resultado]
+
+            # Criar um DataFrame a partir da lista
+            #df = pd.DataFrame(resultado_formatado, columns=["FORNECEDOR", "NUMERO", "CNPJ", "CHAVE", "EMISSÃO", "VALOR CONECT", "CFOP", "STATUS", "SITUACAO"])
+            df = pd.DataFrame(retornoGeral, columns=["FORNECEDOR", "NUMERO", "CNPJ", "CHAVE", "EMISSÃO", "VALOR CONECT", "CFOP", "STATUS", "SITUACAO"])
+
+            # Definir o caminho do arquivo xlsx
+            caminho_arquivo = f"\\\\10.11.10.3\\arcomixfs$\\Dados_Contabilidade\\FISCAL\\CONFRONTO_SPED\\LOJA{numeroLoja}\\{mes_ano}\\resultado_confronto___{numeroLoja}.xlsx"
 
             # Salvar o DataFrame em um arquivo Excel
             df.to_excel(caminho_arquivo, index=False, engine='openpyxl')

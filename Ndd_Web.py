@@ -73,27 +73,28 @@ class NDD:
         navegador.switch_to.frame("iframe")
 
         #Clicando Resumo de incidentes
-        botao_resumo_incidente = WebDriverWait(navegador, 20).until(
+        botao_resumo_incidente = WebDriverWait(navegador, 30).until(
             EC.element_to_be_clickable((By.XPATH,'//*[@id="cmdNavigation"]/div')) 
         )
+        pyautogui.sleep(2)
         botao_resumo_incidente.click()
 
 
         #Clicando Gestao de entrada
-        botao_gestao_entrada = WebDriverWait(navegador, 20).until(
+        botao_gestao_entrada = WebDriverWait(navegador, 30).until(
             EC.element_to_be_clickable((By.XPATH, '//*[@id="cmdNavigation"]/div/ul/li[2]/span'))  
         )
         botao_gestao_entrada.click()
 
 
         #Clicando confronto contábil
-        botao_confronto_contabil = WebDriverWait(navegador, 20).until(
+        botao_confronto_contabil = WebDriverWait(navegador, 30).until(
             EC.element_to_be_clickable((By.XPATH, '//*[@id="cmdNavigation"]/div/ul/li[2]/ul/li[2]/ul/li[2]/a'))  
         )
         botao_confronto_contabil.click()
 
         #botao download
-        botao_download = WebDriverWait(navegador, 20).until(
+        botao_download = WebDriverWait(navegador, 30).until(
         
         EC.element_to_be_clickable((By.XPATH,'//*[@id="wgButtonDownload"]/button/ul/li[1]/span'))  #cmdNavigation
         )

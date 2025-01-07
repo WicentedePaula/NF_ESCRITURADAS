@@ -207,6 +207,41 @@ class Funcao_Apoio:
         return itens_presentes
 
 
+    def verificar_e_incluir(self, resultado, nfPendente_entrada):
+
+        listaResultante =[]
+        
+
+        for item_principal in resultado[1:]:
+
+            achou = "false"
+            partes = str(item_principal).split(";")
+            
+            item_fornecedor_nome = partes[0].strip()
+            item_principal_numero = partes[1].strip()
+            item_cnpj = partes[2].strip()
+            item_chave = partes[3].strip()
+            item_data = partes[4].strip()
+            item_valor = partes[5].strip()
+            item_cgo = partes[6].strip()
+            item_status = partes[7].strip()
+
+            for item_secundario in nfPendente_entrada:
+                print(f" resultado :{item_principal[1]} -- NF_PENDENTE :{item_secundario[2]} -- NATUREZA : {item_secundario[7]}")  
+                situacaoSecundario = item_secundario[7]     
+
+                if item_principal_numero == item_secundario[2]: # Compara os itens nos índices 1 da principal e 2 da secundária
+                   listaResultante.append([item_fornecedor_nome, item_principal_numero, item_cnpj, item_chave, item_data, item_valor, item_cgo, item_status , situacaoSecundario])  # Adiciona o item da coluna 7
+                   achou ="true"
+                   continue
+
+            if achou == "false":
+              listaResultante.append([item_fornecedor_nome, item_principal_numero, item_cnpj, item_chave, item_data, item_valor, item_cgo, item_status])             
+   
+                                                                      
+
+        return listaResultante
+    
     def verificar_e_incluir_0001(self, resultado, nfPendente_entrada):
 
         listaResultante = []
@@ -223,20 +258,6 @@ class Funcao_Apoio:
         return listaResultante
 
 
-    def verificar_e_incluir(self, resultado, nfPendente_entrada):
-
-        listaResultante = []
-
-        for item_principal in resultado[1:]:
-            for item_secundaria in nfPendente_entrada:
-                numeroPrincipal =str(item_principal[1]).lstrip()
-
-                if numeroPrincipal == item_secundaria[2]:  # Compara os itens nos índices 1 da principal e 2 da secundária
-                    listaResultante.append([item_principal[0], item_principal[1], item_principal[2], item_principal[3], item_principal[4], item_principal[5], item_principal[6], item_principal[7] ,item_secundaria[7]])  # Adiciona o item da coluna 7
-                                                                                   
-                                                                      
-
-        return listaResultante
 
 
     def confronto_NDD_bkp_atualizado(self, arquivoNDD, ArquivoEntrada):
@@ -535,6 +556,20 @@ class Funcao_Apoio:
             print(f"O arquivo '{caminho_arquivo}' não existe.")
 
     
+
+    def CriaXLSX(self, lista, numeroLoja, mes_ano):
+        df = pd.DataFrame(lista, columns=["FORNECEDOR", "NUMERO", "CNPJ", "CHAVE", "EMISSÃO", "VALOR CONECT", "CFOP", "STATUS"])
+
+        # Definir o caminho do arquivo xlsx
+        caminho_arquivo = f"\\\\10.11.10.3\\arcomixfs$\\Dados_Contabilidade\\FISCAL\\CONFRONTO_SPED\\LOJA{numeroLoja}\\{mes_ano}\\resultado_Teste{numeroLoja}.xlsx"
+
+        # Salvar o DataFrame em um arquivo Excel
+        df.to_excel(caminho_arquivo, index=False, engine='openpyxl')
+
+        print(f"Arquivo salvo com sucesso em {caminho_arquivo}")
+
+
+
     def GeraSeqTurnoCSV(self, nroLoja, dtaMovimento):
         # Carregando o CSV e garantindo que todas as colunas sejam tratadas como strings
         df_csv = pd.read_csv(
