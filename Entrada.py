@@ -26,6 +26,12 @@ class Entrada:
       
         ano_atual =  datetime.now().strftime("%Y")
         #mes_ano = (datetime.now() - relativedelta(months=1)).strftime("%m-%Y")
+
+        """
+        mes, ano = mes_ano.split('-')
+        mes = str(mes)
+        ano = str(ano)
+        """
         mes_ano ="11-2024" 
       
         #Abrindo Janela de emissão de relatório de Entrada C5
@@ -147,6 +153,7 @@ class Entrada:
 
             ######################### Cruzando relatórios de entrada com relatórios NDD ############################################
             resultado = varFuncao.confronto_NDD(varArquivoNDD, varArquivoEntrada)
+           
             
             resultado_formatado = [linha.split(";") for linha in resultado]
             df = pd.DataFrame(resultado_formatado, columns=["FORNECEDOR", "NUMERO", "CNPJ", "CHAVE", "EMISSÃO", "VALOR CONECT", "CFOP", "STATUS"])
@@ -164,18 +171,22 @@ class Entrada:
             ######################### Cruzamento relatórios de retorno de cruzamento com o de Notas Pendentes no ato da Entrada ####
             pendenciaAtoEntrega = varExecuteDAO.NF_pendentes_Ato_da_Entrega(numeroLoja, dtMesAnterior, dt_Atual)
            
-
             retornoGeral = varFuncao.verificar_e_incluir(resultado, pendenciaAtoEntrega)
+                     
+            try:
+             df = pd.DataFrame(retornoGeral, columns=["FORNECEDOR", "NUMERO", "CNPJ", "CHAVE", "EMISSÃO", "VALOR CONECT", "CFOP", "STATUS", "SITUACAO", "NRO_DEVOLUCAO", "CHAVE_NFDEVOLUCAO"]).applymap(lambda x: "" if pd.isna(x) or x in [None, "None"] else str(x).strip("[]'\"=")) #.applymap(lambda x: str(x).strip("[]'\"="))
 
-           # for vlr in resultado:
-           #  print(vlr)
+            except:
+                
+                df = pd.DataFrame(retornoGeral, columns=["FORNECEDOR", "NUMERO", "CNPJ", "CHAVE", "EMISSÃO", "VALOR CONECT", "CFOP", "STATUS", "SITUACAO"]).applymap(lambda x: "" if pd.isna(x) or x in [None, "None"] else str(x).strip("[]'\"=")) #.applymap(lambda x: str(x).strip("[]'\"="))
 
-            
-            #resultado_formatado = [linha.split(";") for linha in resultado]
-
-            # Criar um DataFrame a partir da lista
-            #df = pd.DataFrame(resultado_formatado, columns=["FORNECEDOR", "NUMERO", "CNPJ", "CHAVE", "EMISSÃO", "VALOR CONECT", "CFOP", "STATUS", "SITUACAO"])
-            df = pd.DataFrame(retornoGeral, columns=["FORNECEDOR", "NUMERO", "CNPJ", "CHAVE", "EMISSÃO", "VALOR CONECT", "CFOP", "STATUS", "SITUACAO"])
+            '''
+            if df.shape[1] > 9:
+                #df = pd.DataFrame(resultado_formatado, columns=["FORNECEDOR", "NUMERO", "CNPJ", "CHAVE", "EMISSÃO", "VALOR CONECT", "CFOP", "STATUS", "SITUACAO"])
+                df = pd.DataFrame(retornoGeral, columns=["FORNECEDOR", "NUMERO", "CNPJ", "CHAVE", "EMISSÃO", "VALOR CONECT", "CFOP", "STATUS", "SITUACAO", "NRO_DEVOLUCAO", "CHAVE_NFDEVOLUCAO"])
+            else:
+                df = pd.DataFrame(retornoGeral, columns=["FORNECEDOR", "NUMERO", "CNPJ", "CHAVE", "EMISSÃO", "VALOR CONECT", "CFOP", "STATUS", "SITUACAO"])
+            ''' 
 
             # Definir o caminho do arquivo xlsx
             caminho_arquivo = f"\\\\10.11.10.3\\arcomixfs$\\Dados_Contabilidade\\FISCAL\\CONFRONTO_SPED\\LOJA{numeroLoja}\\{mes_ano}\\resultado_confronto___{numeroLoja}.xlsx"
@@ -185,22 +196,4 @@ class Entrada:
 
             print(f"Arquivo salvo com sucesso em {caminho_arquivo}")
                                                                                 
-            """
-            resultado_formatado = [linha.split(";") for linha in resultado]
-            #Salvar o DataFrame em um arquivo CSV
-            caminho_arquivo = f"\\\\10.11.10.3\\arcomixfs$\\Dados_Contabilidade\\FISCAL\\CONFRONTO_SPED\\LOJA{numeroLoja}\\{mes_ano}\\resultado_confronto{numeroLoja}.csv"
-            # Gravando a lista no arquivo CSV
-            with open(caminho_arquivo, mode='w', newline='', encoding='utf-8') as file:
-                writer = csv.writer(file)
-                
-                #Escrever o cabeçalho no CSV
-                writer.writerow(["FORNECEDOR ;NUMERO ; CNPJ; CHAVE; EMISSÃO; STATUS"])
-
-
-                # Escrever uma linha no CSV (a lista como linha única)
-                writer.writerows(resultado_formatado)
-
-            print(f"Arquivo salvo com sucesso em {caminho_arquivo}")
-            """
-            
-            
+                      

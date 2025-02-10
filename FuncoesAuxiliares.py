@@ -163,6 +163,7 @@ class Funcao_Apoio:
         coluna_csv_12 = df_csv.iloc[:, 12].astype(str).tolist()  # Razão Social
         try:
             coluna_csv_14 = df_csv.iloc[:, 14].astype(str).tolist()  # Número da Nota
+                                                                                                                  
         except:
             print("NRO_NOTA_VAZIO")
             coluna_csv_14 = []  # Evita erros se a coluna não existir
@@ -188,6 +189,7 @@ class Funcao_Apoio:
 
         # Processar os dados
         for situacao, descricao, item_coluna_12, item_coluna_14, coluna_csv_10, coluna_csv_5, coluna_csv_16, coluna_csv_18, coluna_csv_30 in zip(coluna_situacao, coluna_descricao, coluna_csv_12, coluna_csv_14, coluna_csv_10, coluna_csv_5, coluna_csv_16, coluna_csv_18, coluna_csv_30):
+           
             if situacao == 'Não Informado' and descricao == 'Autorizado':
                 item_coluna_14_formatado = item_coluna_14.replace('.0', '')
                 coluna_csv_30 = coluna_csv_30.replace('.0', '')
@@ -206,13 +208,54 @@ class Funcao_Apoio:
         itens_presentes = list(itens_presentes)
         return itens_presentes
 
+    def verificar_e_incluir(self, resultado, nfPendente_entrada):# Meótodo separa as notas de devolução das notas de entrada
 
-    def verificar_e_incluir(self, resultado, nfPendente_entrada):
+        listaResultante =[]
+        listaNotasDevolucao =[]
+
+        for item_principal in resultado[0:]:
+
+            achou = "false"
+            partes = str(item_principal).split(";")
+            
+            item_fornecedor_nome = partes[0].strip()
+            item_principal_numero = partes[1].strip()
+            item_cnpj = partes[2].strip()
+            item_chave = partes[3].strip()
+            item_data = partes[4].strip()
+            item_valor = partes[5].strip()
+            item_cgo = partes[6].strip()
+            item_status = partes[7].strip()
+
+            for item_secundario in nfPendente_entrada:
+               
+                situacaoSecundario = item_secundario[7]     
+
+                if item_principal_numero == item_secundario[2]: # Compara os itens nos índices 1 da principal e 2 da secundária
+
+                   if "devolucao" in situacaoSecundario.lower() or "dev." in situacaoSecundario.lower(): #Se a natureza for devolução ela vai ser incluída em outra lista
+                      listaNotasDevolucao.append([item_fornecedor_nome, item_principal_numero, item_cnpj, item_chave, item_data, item_valor, item_cgo, "Nota Fiscal de Devolução", situacaoSecundario])#Notas de devolução.
+                      achou ="true"
+
+                      continue
+
+                   listaResultante.append([item_fornecedor_nome, item_principal_numero, item_cnpj, item_chave, item_data, item_valor, item_cgo, item_status , situacaoSecundario])#Adiciona o item da coluna 7
+                
+                   achou ="true"
+                   continue
+
+            if achou == "false":
+              listaResultante.append([item_fornecedor_nome, item_principal_numero, item_cnpj, item_chave, item_data, item_valor, item_cgo, item_status])             
+                                                                
+        listaResultante = Funcao_Apoio.Verifica_notas_de_origem_das_NFs_de_Devolucao(listaResultante, listaNotasDevolucao)
+        return listaResultante
+
+    def verificar_e_incluir_Bkp_UltimoEmUso(self, resultado, nfPendente_entrada):
 
         listaResultante =[]
         
 
-        for item_principal in resultado[1:]:
+        for item_principal in resultado[0:]:
 
             achou = "false"
             partes = str(item_principal).split(";")
@@ -237,27 +280,166 @@ class Funcao_Apoio:
 
             if achou == "false":
               listaResultante.append([item_fornecedor_nome, item_principal_numero, item_cnpj, item_chave, item_data, item_valor, item_cgo, item_status])             
-   
-                                                                      
+                                                                         
+
+        return listaResultante
+        
+    def Verifica_notas_de_origem_das_NFs_de_Devolucao(listaResultante, listaDevolucao): #Vefifica se a nf de origem está na planilha, se existir 
+        retultado= list(listaResultante)
+        
+
+        for item_Devolucao in listaDevolucao:
+                                
+            partesDevolucao = str(item_Devolucao).split(",")
+                                                                                                                                       
+            item_devolucao_numero = partesDevolucao[1].strip()
+            item_devolucao_cnpj =  partesDevolucao[2].strip()
+            item_devolucao_chave = partesDevolucao[3].strip() 
+            item_devolucao_valor = partesDevolucao[5].strip() 
+
+            for item_listaResultante in retultado[0:]:
+                item_situacao = "vazio" 
+
+                partes = str(item_listaResultante).split(",")
+                
+                item_fornecedor_nome = partes[0].strip()
+                item_principal_numero = partes[1].strip()
+                item_cnpj = partes[2].strip()
+                item_chave = partes[3].strip()
+                item_data = partes[4].strip()
+                item_valor = partes[5].strip()
+                item_cgo = partes[6].strip()
+                item_status = partes[7].strip()
+                                                
+                if len(partes) > 8:
+                 item_situacao = partes[8].strip()
+                else:
+                    item_situacao = "N"  
+                                                                                                                                                                                                                                                        
+                #item_cnpj ="999"
+                if item_cnpj == item_devolucao_cnpj and item_valor == item_devolucao_valor: # Compara os itens nos índices 1 da principal e 2 da secundária                   
+                #   numeroFormatodo = re.sub(r'\D', '', item_devolucao_numero)
+                    indice = retultado.index(item_listaResultante)
+                    #indice = retultado.index(item_Devolucao)
+                    retultado.pop(indice)
+                    
+
+                   # if len(partes) < 10:
+                   #     item_devolucao_numero ="----*******----"
+                   #     item_devolucao_chave ="----******-----"
+
+                    item_status = "Nota Com Devolução"
+                    retultado.append([item_fornecedor_nome, item_principal_numero, item_cnpj, item_chave, item_data, item_valor, item_cgo, item_status, item_situacao, item_devolucao_numero, item_devolucao_chave])  # Adiciona o item da coluna 7
+                    break
+              
+
+        return retultado
+    
+
+
+    def Verifica_notas_de_origem_das_NFs_de_Devolucao______(listaResultante, listaDevolucao): #Vefifica se a nf de origem está na planilha, se existir 
+        retultado= list(listaResultante)
+        retorno =[] 
+
+        for item_Devolucao in listaDevolucao:
+                                
+            partesDevolucao = str(item_Devolucao).split(",") 
+           
+            item_devolucao_numero = partesDevolucao[1].strip()
+            item_devolucao_cnpj =  partesDevolucao[2].strip()
+            item_devolucao_chave = partesDevolucao[3].strip() 
+            item_devolucao_valor = partesDevolucao[5].strip() 
+
+            for item_listaResultante in retultado[0:]:
+                item_situacao = "vazio" 
+
+                partes = str(item_listaResultante).split(",")
+                
+                item_fornecedor_nome = partes[0].strip()
+                item_principal_numero = partes[1].strip()
+                item_cnpj = partes[2].strip()
+                item_chave = partes[3].strip()
+                item_data = partes[4].strip()
+                item_valor = partes[5].strip()
+                item_cgo = partes[6].strip()
+                item_status = partes[7].strip()
+                                                
+                if len(partes) > 8:
+                 item_situacao = partes[8].strip()
+                else:
+                    item_situacao = "N"  
+                                                                                                                                                                                                                                                        
+                
+                if item_cnpj == item_devolucao_cnpj and item_valor == item_devolucao_valor: # Compara os itens nos índices 1 da principal e 2 da secundária                   
+                #   numeroFormatodo = re.sub(r'\D', '', item_devolucao_numero)
+                    indice = retultado.index(item_listaResultante)
+                    #indice = retultado.index(item_Devolucao)
+                    retultado.pop(indice)
+
+                 #   if len(partes) < 9:
+                  #      item_devolucao_numero ="----*******----"
+                   #     item_devolucao_chave ="----******-----"
+
+                    item_status = "Nota Com Devolução"
+                    retorno.append([item_fornecedor_nome, item_principal_numero, item_cnpj, item_chave, item_data, item_valor, item_cgo, item_status, item_situacao, item_devolucao_numero, item_devolucao_chave])  # Adiciona o item da coluna 7
+                    break
+                
+            item_devolucao_numero ="----*******----"
+            item_devolucao_chave  ="----*******----"
+            retorno.append([item_fornecedor_nome, item_principal_numero, item_cnpj, item_chave, item_data, item_valor, item_cgo, item_status, item_situacao, item_devolucao_numero, item_devolucao_chave])  # Adiciona o item da coluna 7       
+        
+
+        return retorno
+    
+
+
+
+    def Verifica_notas_de_origem_das_NFs_de_Devolucao_BKP_METODO(listaResultante, listaDevolucao): #Vefifica se a nf de origem está na planilha, se existir 
+        retultado= list(listaResultante)
+        
+        for item_listaResultante in retultado[1:]:
+                        
+            partes = str(item_listaResultante).split(",")
+            
+            item_fornecedor_nome = partes[0].strip()
+            item_principal_numero = partes[1].strip()
+            item_cnpj = partes[2].strip()
+            item_chave = partes[3].strip()
+            item_data = partes[4].strip()
+            item_valor = partes[5].strip()
+            item_cgo = partes[6].strip()
+            item_status = partes[7].strip()
+
+            if len(partes) > 8:
+             item_situacao = partes[8].strip()
+            else:
+                item_situacao = ""
+
+            for item_Devolucao in listaDevolucao:
+                                
+                partesDevolucao = str(item_Devolucao).split(",") 
+
+                item_devolucao_numero = partesDevolucao[1].strip()
+                item_devolucao_cnpj =  partesDevolucao[2].strip() 
+                item_devolucao_chave = partesDevolucao[3].strip()   
+                item_devolucao_valor = partesDevolucao[5].strip()      
+
+                print(f"NOTA DE ENTRADA :{item_principal_numero} -- NOTA DE DEVOLUCAO :{item_devolucao_numero} -- VALOR_ENTRADA :{item_valor} -- VALOR DEVOLUCAO :{item_devolucao_valor}")   
+
+                if item_cnpj == item_devolucao_cnpj and item_valor == item_devolucao_valor: # Compara os itens nos índices 1 da principal e 2 da secundária
+                   
+                #   numeroFormatodo = re.sub(r'\D', '', item_devolucao_numero)
+                   indice = retultado.index(item_listaResultante)
+                   #indice = retultado.index(item_Devolucao)
+                   retultado.pop(indice)
+
+                   item_status = "Nota Com Devolução"
+                   retultado.append([item_fornecedor_nome, item_principal_numero, item_cnpj, item_chave, item_data, item_valor, item_cgo, item_status, item_situacao, item_devolucao_numero, item_devolucao_chave])  # Adiciona o item da coluna 7
+                  
+                
 
         return listaResultante
     
-    def verificar_e_incluir_0001(self, resultado, nfPendente_entrada):
-
-        listaResultante = []
-
-        for item_principal in resultado[1:]:
-            for item_secundaria in nfPendente_entrada:
-                numeroPrincipal =str(item_principal[1]).lstrip()
-
-                if numeroPrincipal == item_secundaria[11]:  # Compara os itens nos índices 1 da principal e 2 da secundária
-                    listaResultante.append([item_principal[0], item_principal[1], item_principal[2], item_principal[3], item_principal[4], item_principal[5], item_principal[6], item_principal[7] ,item_secundaria[7]])  # Adiciona o item da coluna 7
-                              
-                                                                      
-
-        return listaResultante
-
-
 
 
     def confronto_NDD_bkp_atualizado(self, arquivoNDD, ArquivoEntrada):
