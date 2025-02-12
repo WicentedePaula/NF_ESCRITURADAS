@@ -25,14 +25,15 @@ class Entrada:
         path_modulo_consico = "\\\\10.102.227.2\\consinco2\\importacao\\sped \n"
       
         ano_atual =  datetime.now().strftime("%Y")
-        #mes_ano = (datetime.now() - relativedelta(months=1)).strftime("%m-%Y")
+        mes_ano = (datetime.now() - relativedelta(months=1)).strftime("%m-%Y")
 
-        """
+        
         mes, ano = mes_ano.split('-')
         mes = str(mes)
         ano = str(ano)
-        """
-        mes_ano ="11-2024" 
+        
+        mes_ano ="01-2025" 
+        ano ="2025"
       
         #Abrindo Janela de emissão de relatório de Entrada C5
         pyautogui.press("ctrl")
@@ -47,8 +48,8 @@ class Entrada:
 
         varFuncao.aguardar_janela_por_imagem(varJanelaFiscal,"varJanelaEntrada")
 
-
-        varQueryLojas ="select nroempresa, empresa from CONSINCO.dim_empresa where nroempresa not in (99, 800, 986, 987, 989, 999, 10, 13, 20, 25, 29) and nroempresa = 2 order by NROEMPRESA"
+        #varQueryLojas ="select nroempresa, empresa from CONSINCO.dim_empresa where nroempresa not in (99, 800, 986, 989, 999, 10, 13, 20, 25, 29, 31) order by NROEMPRESA"
+        varQueryLojas ="select nroempresa, empresa from CONSINCO.dim_empresa where nroempresa not in (99, 800, 986, 989, 999, 10, 13, 20, 25, 29, 31) and nroempresa > 23 order by NROEMPRESA"
         #varQueryLojas ="select nroempresa, empresa from CONSINCO.dim_empresa where nroempresa in (1,2,3,5,24,30) order by NROEMPRESA"
         #varQueryLojas ="select nroempresa, empresa from CONSINCO.dim_empresa where nroempresa in (8,14,17,18,27) order by NROEMPRESA"
         varQueryLojas = varExecuteDAO.executaQuery(varQueryLojas)
@@ -58,9 +59,9 @@ class Entrada:
             
             numeroLoja = str(nrlj) #Numero da loja string
             numero_nome = str(nome_nm_lj) #Nome e numero da loja string
-            varArquivoEntrada =f"\\\\10.11.10.3\\arcomixfs$\\Dados_Contabilidade\\FISCAL\\CONFRONTO_SPED\\LOJA{numeroLoja}\\{mes_ano}\\entradaLoja{numeroLoja}.txt"
-            varArquivoNDD = f"\\\\10.11.10.3\\arcomixfs$\\Dados_Contabilidade\\FISCAL\\CONFRONTO_SPED\\LOJA{numeroLoja}\\{mes_ano}\\arquivoNDD_Loja{numeroLoja}.csv"
-            varPathPastas_sped =f"\\\\10.11.10.3\\arcomixfs$\\Dados_Contabilidade\\FISCAL\\CONFRONTO_SPED\\LOJA{numeroLoja}\\{mes_ano}\\SPED_EMP{numeroLoja}.txt"
+            varArquivoEntrada =f"\\\\10.11.10.3\\arcomixfs$\\Dados_Contabilidade\\FISCAL\\CONFRONTO_SPED\\LOJA{numeroLoja}\\{ano}\\{mes_ano}\\entradaLoja{numeroLoja}.txt"
+            varArquivoNDD = f"\\\\10.11.10.3\\arcomixfs$\\Dados_Contabilidade\\FISCAL\\CONFRONTO_SPED\\LOJA{numeroLoja}\\{ano}\\{mes_ano}\\arquivoNDD_Loja{numeroLoja}.csv"
+            varPathPastas_sped =f"\\\\10.11.10.3\\arcomixfs$\\Dados_Contabilidade\\FISCAL\\CONFRONTO_SPED\\LOJA{numeroLoja}\\{ano}\\{mes_ano}\\SPED_EMP{numeroLoja}.txt"
                                                                                                                                    
             pyautogui.press("ctrl")                                          
             pyautogui.hotkey("ctrl","shift","t") 
@@ -83,8 +84,8 @@ class Entrada:
 
             #dtMesAnterior = varExecuteDAO.executaQuery("SELECT TO_CHAR(TRUNC(SYSDATE, 'MM') - INTERVAL '1' MONTH, 'DD/MM/YYYY') AS primeiro_dia_mes_anterior FROM dual") 
             #dt_Atual= varExecuteDAO.executaQuery("SELECT TO_CHAR(SYSDATE, 'DD/MM/YYYY') AS data_dia_Atual FROM dual") 
-            dtMesAnterior ="01/11/2024" 
-            dt_Atual ="27/12/2024"
+            dtMesAnterior ="01/01/2025" 
+            dt_Atual ="11/02/2025"
           
             ############################### Gerando Relatório de entrada C5 ###################################################################################
             appEntrada = Application().connect(title_re=".*Fiscal.*")
@@ -146,7 +147,7 @@ class Entrada:
             
 
             ######################### Tranferido o arquivo do ndd para a pasta do confronto Sped
-            caminho_arquivoNDD =f"\\\\10.11.10.3\\arcomixfs$\\Dados_Contabilidade\\FISCAL\\CONFRONTO_SPED\\LOJA{numeroLoja}\\{mes_ano}\\"
+            caminho_arquivoNDD =f"\\\\10.11.10.3\\arcomixfs$\\Dados_Contabilidade\\FISCAL\\CONFRONTO_SPED\\LOJA{numeroLoja}\\{ano}\\{mes_ano}\\"
             arquivoNDD =f"arquivoNDD_Loja{numeroLoja}.csv"
                                
             varFuncao.transferirArquivo(caminho_arquivoNDD,arquivoNDD)
@@ -159,7 +160,7 @@ class Entrada:
             df = pd.DataFrame(resultado_formatado, columns=["FORNECEDOR", "NUMERO", "CNPJ", "CHAVE", "EMISSÃO", "VALOR CONECT", "CFOP", "STATUS"])
 
             # Definir o caminho do arquivo xlsx
-            caminho_arquivo = f"\\\\10.11.10.3\\arcomixfs$\\Dados_Contabilidade\\FISCAL\\CONFRONTO_SPED\\LOJA{numeroLoja}\\{mes_ano}\\resultado___Teste{numeroLoja}.xlsx"
+            caminho_arquivo = f"\\\\10.11.10.3\\arcomixfs$\\Dados_Contabilidade\\FISCAL\\CONFRONTO_SPED\\LOJA{numeroLoja}\\{ano}\\{mes_ano}\\resultado_parcial{numeroLoja}.xlsx"
 
             # Salvar o DataFrame em um arquivo Excel
             df.to_excel(caminho_arquivo, index=False, engine='openpyxl')
@@ -189,7 +190,7 @@ class Entrada:
             ''' 
 
             # Definir o caminho do arquivo xlsx
-            caminho_arquivo = f"\\\\10.11.10.3\\arcomixfs$\\Dados_Contabilidade\\FISCAL\\CONFRONTO_SPED\\LOJA{numeroLoja}\\{mes_ano}\\resultado_confronto___{numeroLoja}.xlsx"
+            caminho_arquivo = f"\\\\10.11.10.3\\arcomixfs$\\Dados_Contabilidade\\FISCAL\\CONFRONTO_SPED\\LOJA{numeroLoja}\\{ano}\\{mes_ano}\\resultado_confronto{numeroLoja}.xlsx"
 
             # Salvar o DataFrame em um arquivo Excel
             df.to_excel(caminho_arquivo, index=False, engine='openpyxl')

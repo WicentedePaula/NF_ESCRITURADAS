@@ -739,11 +739,11 @@ class Funcao_Apoio:
 
     
 
-    def CriaXLSX(self, lista, numeroLoja, mes_ano):
+    def CriaXLSX(self, lista, numeroLoja, mes_ano, ano):
         df = pd.DataFrame(lista, columns=["FORNECEDOR", "NUMERO", "CNPJ", "CHAVE", "EMISSÃO", "VALOR CONECT", "CFOP", "STATUS"])
 
         # Definir o caminho do arquivo xlsx
-        caminho_arquivo = f"\\\\10.11.10.3\\arcomixfs$\\Dados_Contabilidade\\FISCAL\\CONFRONTO_SPED\\LOJA{numeroLoja}\\{mes_ano}\\resultado_Teste{numeroLoja}.xlsx"
+        caminho_arquivo = f"\\\\10.11.10.3\\arcomixfs$\\Dados_Contabilidade\\FISCAL\\CONFRONTO_SPED\\LOJA{numeroLoja}\\{ano}\\{mes_ano}\\resultado_Teste{numeroLoja}.xlsx"
 
         # Salvar o DataFrame em um arquivo Excel
         df.to_excel(caminho_arquivo, index=False, engine='openpyxl')

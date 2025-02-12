@@ -49,7 +49,7 @@ class Sped_Emp:
             varFuncao.GeraLogsInfo(f"LOJA : {numero_nome} Erro ao capturar arquivo !!!")
             return sucesso
         
-        pyautogui.sleep(10)
+        pyautogui.sleep(13)
 
         pyautogui.press("ctrl")
         pyautogui.press("alt")
